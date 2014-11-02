@@ -8,13 +8,13 @@ module Control.Exception.BracketM
 import Control.Monad.Cont
 import Control.Exception
 
-type BracketM r a = ContT r (IO) a
+type BracketM a = ContT a IO (IO a)
 
-bracketM :: IO a -> (a -> IO c) -> BracketM r a
+bracketM :: IO a -> (a -> IO b) -> BracketM a
 bracketM start final = ContT $ bracket start final
 
-bracketM_ :: IO a -> IO c -> BracketM r a
-bracketM_ start final = bracketM start $ const final
+bracketM :: IO a -> IO b -> BracketM a
+bracketM start final = bracketM start $ const final
 
-runBracketM :: BracketM a (IO a) -> IO a
+runBracketM :: BracketM a -> IO a
 runBracketM m = runContT m id
