@@ -23,13 +23,13 @@ import Control.Monad.Trans.Class
 
 -- runBracketC m = runContT m id
 
-type BracketT r a = ContT r (IO) a
+type BracketT r m a = ContT r m a
 
-bracketC :: IO a -> (a -> IO c) -> BracketT r a
+bracketC :: (MonadTry m) => m a -> (a -> m c) -> BracketT r m a
 bracketC start final = ContT $ bracket start final
 
-bracketC_ :: IO a -> IO c -> BracketT r a
+bracketC_ :: (MonadTry m) => m a -> m c -> BracketT r m a
 bracketC_ start final = bracketC start $ const final
 
-runBracketC :: BracketT a (IO a) -> IO a
+runBracketC :: (MonadTry m) => BracketT a m (m a) -> m a
 runBracketC m = runContT m id
