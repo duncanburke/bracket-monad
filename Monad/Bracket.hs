@@ -2,7 +2,7 @@ module Monad.Bracket (
   BracketT,
   bracketC,
   bracketC_,
-  runBracketC
+  runBracketT
   ) where
 
 import Monad.Cont
@@ -21,5 +21,5 @@ bracketC start final = ContT $ bracket start final
 bracketC_ :: (MonadTry m) => m a -> m b -> BracketT_ m a
 bracketC_ start final = bracketC start $ const final
 
-runBracketC :: (MonadTry m) => BracketT_ m a -> m ()
-runBracketC b = runContT b (\_ -> return ())
+runBracketT :: (MonadTry m) => BracketT_ m a -> m ()
+runBracketT b = runContT b (\_ -> return ())
