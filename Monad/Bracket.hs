@@ -1,7 +1,11 @@
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
+
 module Monad.Bracket (
   BracketT,
-  bracketC,
-  bracketC_,
+  MonadBracket(..),
   runBracketT
   ) where
 
@@ -11,13 +15,17 @@ import Monad.Try
 import Control.Monad.Trans.Cont (ContT(ContT), runContT)
 import Control.Monad.Trans.Class
 
-type BracketT m = ContT () m
+import Control.Monad.Lift
 
-bracketC :: (MonadTry m) => m a -> (a -> m b) -> BracketT m a
-bracketC start final = ContT $ bracket start final
+type BracketT m a = (MonadTry m, Monad m) => ContT () m a
 
-bracketC_ :: (MonadTry m) => m a -> m b -> BracketT m a
-bracketC_ start final = bracketC start $ const final
+class (Monad m) => MonadBracket m where
+  bracketC :: (Monad n, MonadTrans t, m ~ (t n)) => n a -> (a -> n b) -> m a
+  bracketC_ :: (Monad n, MonadTrans t, m ~ (t n)) => n a -> n b -> m a
+  bracketC_ start final = bracketC start $ const final
+
+instance (MonadTry m) => MonadBracket (ContT () m) where
+  bracketC start final = ContT $ bracket start final
 
 runBracketT :: (MonadTry m) => BracketT m a -> m ()
 runBracketT b = runContT b (\_ -> return ())
