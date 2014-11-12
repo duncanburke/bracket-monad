@@ -33,20 +33,14 @@ class (Monad m) => MonadBracket m where
   bracketC_ start final = bracketC start $ const final
 
 #if MIN_VERSION_mmorph(1, 0, 1)
-instance (MonadBracket (f (g m)),
-          BracketInner (f (g m)) ~ BracketInner (ComposeT f g m))
-         => MonadBracket (ComposeT f g m) where
-  bracketC start final = ComposeT (bracketC start final)
+-- instance (MonadBracket (f (g m)),
+--           BracketInner (f (g m)) ~ BracketInner (ComposeT f g m))
+--          => MonadBracket (ComposeT f g m) where
+--   bracketC start final = ComposeT (bracketC start final)
 #endif
 
-class (Monad m, Monad n) => MonadBracket' m n where
-  bracketC' :: n a -> (a -> n b) -> m a
-
-instance (MonadTry n) => MonadBracket' (ContT () n) n where
-  bracketC' start final = ContT $ bracket start final
-
-instance (MonadBracket' m n, n ~ BracketInner m) => MonadBracket m where
-  bracketC = bracketC'
+instance (MonadTry n, BracketInner (ContT () n) ~ n) => MonadBracket (ContT () n) where
+  bracketC start final = ContT $ bracket start final
 
 runBracketT :: (MonadTry m) => BracketT m a -> m ()
 runBracketT b = runContT b (\_ -> return ())
