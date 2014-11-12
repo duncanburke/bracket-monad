@@ -16,6 +16,7 @@ library
   exposed-modules:     Monad.Bracket
   build-depends:       base,
                        layers,
-                       transformers
+                       transformers,
+                       mmorph
   hs-source-dirs:      .
   default-language:    Haskell2010
